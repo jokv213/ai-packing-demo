@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">エラーが発生しました</h1>
+<div class="alert alert-danger">
+  {{ error or '予期しないエラーです' }}
+</div>
+<a class="btn btn-primary" href="/">Dashboardへ戻る</a>
+{% endblock %}

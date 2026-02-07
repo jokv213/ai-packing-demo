@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Orders - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Orders</h1>
+
+<form class="row g-2 mb-3" method="get" action="/orders">
+  <div class="col-md-2">
+    <select class="form-select" name="status">
+      <option value="all" {% if filters.status == 'all' %}selected{% endif %}>全ステータス</option>
+      {% for s in ['created','picking','packing','shipped'] %}
+        <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <input class="form-control" type="date" name="date_from" value="{{ filters.date_from }}">
+  </div>
+  <div class="col-md-2">
+    <input class="form-control" type="date" name="date_to" value="{{ filters.date_to }}">
+  </div>
+  <div class="col-md-2">
+    <select class="form-select" name="channel">
+      <option value="all" {% if filters.channel == 'all' %}selected{% endif %}>全チャネル</option>
+      {% for c in channels %}
+        <option value="{{ c }}" {% if filters.channel == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100">絞り込み</button>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Order</th>
+        <th>受注日</th>
+        <th>チャネル</th>
+        <th>配送先</th>
+        <th>Status</th>
+        <th>Shipment数</th>
+        <th>推奨箱（代表）</th>
+        <th>見積送料合計</th>
+        <th>アクション</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in summaries %}
+      <tr>
+        <td><a href="/orders/{{ row.order.order_id }}">{{ row.order.order_id }}</a></td>
+        <td>{{ row.order.order_date }}</td>
+        <td>{{ row.order.channel }}</td>
+        <td>{{ row.order.destination_prefecture }}</td>
+        <td><span class="badge text-bg-secondary">{{ row.order.status }}</span></td>
+        <td>{{ row.shipment_count }}</td>
+        <td>{{ row.representative_box }}</td>
+        <td>¥{{ '{:,}'.format(row.estimate_total) }}</td>
+        <td>
+          <div class="d-flex gap-1">
+            <form method="post" action="/orders/{{ row.order.order_id }}/recalculate">
+              <button class="btn btn-sm btn-outline-primary">提案を再計算</button>
+            </form>
+            <a class="btn btn-sm btn-primary" href="/packing/{{ row.order.order_id }}">梱包開始</a>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9" class="text-muted">該当データがありません</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

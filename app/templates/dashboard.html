@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Dashboard</h1>
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card metric-card">
+      <div class="card-body">
+        <h2 class="h6 text-muted">未出荷件数</h2>
+        <p class="display-6 mb-0">{{ unshipped_count }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card metric-card">
+      <div class="card-body">
+        <h2 class="h6 text-muted">推奨採用率（直近7日）</h2>
+        <p class="display-6 mb-0">{{ '%.1f'|format(adoption_rate) }}%</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card metric-card">
+      <div class="card-body">
+        <h2 class="h6 text-muted">同梱分割件数</h2>
+        <p class="display-6 mb-0">{{ split_count }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card metric-card">
+      <div class="card-body">
+        <h2 class="h6 text-muted">送料見積合計（推奨ベース）</h2>
+        <p class="display-6 mb-0">¥{{ '{:,}'.format(estimate_total) }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">差し替え理由 TOP5（直近7日）</div>
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr><th>理由</th><th>件数</th></tr>
+      </thead>
+      <tbody>
+        {% for reason, cnt in top_reasons %}
+          <tr>
+            <td>{{ reason_labels.get(reason, reason) }}</td>
+            <td>{{ cnt }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="2" class="text-muted">データがありません</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

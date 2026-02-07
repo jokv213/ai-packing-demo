@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Packing Assistant - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Packing Assistant</h1>
+
+<form class="row g-2 mb-4" method="get" action="/packing">
+  <div class="col-md-4">
+    <input class="form-control" type="text" name="order_id" placeholder="Order IDを入力（例: ORD-0001）">
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100">検索</button>
+  </div>
+</form>
+
+{% if order %}
+  <div class="mb-3">
+    <h2 class="h5">{{ order.order_id }} / {{ order.destination_prefecture }} / {{ order.status }}</h2>
+  </div>
+
+  <ul class="nav nav-pills mb-3">
+    {% for shipment in shipments %}
+      <li class="nav-item">
+        <a class="nav-link {% if active_shipment == shipment.shipment_no %}active{% endif %}" href="/packing/{{ order.order_id }}?active={{ shipment.shipment_no }}">Shipment #{{ shipment.shipment_no }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% for shipment in shipments %}
+    {% if active_shipment == shipment.shipment_no %}
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>Shipment #{{ shipment.shipment_no }}</strong>
+          <span class="small">充填率: {{ safe_ratio(shipment.fill_ratio) }}</span>
+        </div>
+        <div class="card-body">
+          {% if shipment.split_reason %}
+            <div class="alert alert-warning">分割理由: {{ shipment.split_reason }}</div>
+          {% endif %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <h3 class="h6">推奨</h3>
+              <p class="mb-1"><strong>箱:</strong> {{ shipment.recommended_box_id or '未提案' }} {{ shipment.recommended_box_name or '' }}</p>
+              <p class="mb-1"><strong>サイズ:</strong> {{ shipment.size_class or '-' }}</p>
+              <p class="mb-1"><strong>送料:</strong> ¥{{ '{:,}'.format(shipment.shipping_yen or 0) }}</p>
+              <p class="mb-1"><strong>合計:</strong> ¥{{ '{:,}'.format(shipment.total_cost_yen or 0) }}</p>
+              {% if shipment.warning_message %}
+                <div class="alert alert-danger py-2">{{ shipment.warning_message }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <h3 class="h6">商品リスト</h3>
+              <ul class="mb-2">
+                {% for item in shipment.items %}
+                  <li>{{ item.sku_id }} x {{ item.qty }} {% if item.sku %}({{ item.sku.name }}){% endif %}</li>
+                {% endfor %}
+              </ul>
+              {% for tag in shipment_tags(shipment) %}
+                <span class="badge text-bg-secondary">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <hr>
+          <h3 class="h6">実績入力</h3>
+          <form method="post" action="/packing/{{ order.order_id }}/shipments/{{ shipment.shipment_no }}/confirm" class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label">実際に使った箱</label>
+              <select class="form-select" name="actual_box_id" required>
+                <option value="">選択してください</option>
+                {% for box in boxes %}
+                  <option value="{{ box.box_id }}" {% if shipment.recommended_box_id == box.box_id %}selected{% endif %}>{{ box.box_id }} / {{ box.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">差し替え理由</label>
+              <select class="form-select" name="reason_code">
+                <option value="">（推奨どおりの場合は未選択）</option>
+                {% for code, label in reason_options.items() %}
+                  <option value="{{ code }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">作業者名（任意）</label>
+              <input class="form-control" type="text" name="worker_name">
+            </div>
+            <div class="col-12">
+              <label class="form-label">自由記述（任意）</label>
+              <textarea class="form-control" name="reason_note" rows="2" placeholder="補足があれば入力"></textarea>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-primary">確定してログ保存</button>
+            </div>
+          </form>
+
+          {% if latest_by_no.get(shipment.shipment_no) %}
+            {% set lg = latest_by_no.get(shipment.shipment_no) %}
+            <div class="alert alert-light border mt-3 mb-0">
+              最新ログ: {{ lg.created_at }} / 実箱 {{ lg.actual_box_id }}
+              {% if lg.reason_code %} / 理由 {{ reason_labels.get(lg.reason_code, lg.reason_code) }}{% endif %}
+              {% if lg.worker_name %} / 作業者 {{ lg.worker_name }}{% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-warning">該当するShipmentがありません</div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">Order IDを入力して梱包提案を表示してください。</p>
+{% endif %}
+{% endblock %}

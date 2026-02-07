@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Logs - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Logs</h1>
+
+<form method="get" action="/logs" class="row g-2 mb-3">
+  <div class="col-md-2"><input class="form-control" type="date" name="date_from" value="{{ filters.date_from }}"></div>
+  <div class="col-md-2"><input class="form-control" type="date" name="date_to" value="{{ filters.date_to }}"></div>
+  <div class="col-md-3">
+    <select class="form-select" name="reason">
+      <option value="all" {% if filters.reason == 'all' %}selected{% endif %}>全理由</option>
+      <option value="MATCH" {% if filters.reason == 'MATCH' %}selected{% endif %}>推奨採用</option>
+      {% for code, label in reason_options.items() %}
+        <option value="{{ code }}" {% if filters.reason == code %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3"><input class="form-control" name="sku" placeholder="SKUで絞込" value="{{ filters.sku }}"></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">絞り込み</button></div>
+</form>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted small">推奨採用率</div><div class="display-6">{{ '%.1f'|format(adoption_rate) }}%</div></div></div></div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">差し替え理由 TOP</div>
+      <ul class="mb-0">
+        {% for reason, cnt in top_reasons %}
+          <li>{{ reason_labels.get(reason, reason) }}: {{ cnt }}</li>
+        {% else %}
+          <li class="text-muted">データなし</li>
+        {% endfor %}
+      </ul>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">入らない多発SKU</div>
+      <ul class="mb-0">
+        {% for sku_id, cnt in no_fit_skus %}
+          <li>{{ sku_id }}: {{ cnt }}</li>
+        {% else %}
+          <li class="text-muted">データなし</li>
+        {% endfor %}
+      </ul>
+    </div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">ログ一覧</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped mb-0">
+      <thead>
+        <tr>
+          <th>日時</th><th>order_id</th><th>shipment_no</th><th>推奨箱</th><th>実箱</th><th>理由</th><th>作業者</th><th>メモ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in records %}
+          <tr>
+            <td>{{ row.created_at }}</td>
+            <td><a href="/orders/{{ row.order_id }}">{{ row.order_id }}</a></td>
+            <td>{{ row.shipment_no }}</td>
+            <td>{{ row.recommended_box_id or '-' }}</td>
+            <td>{{ row.actual_box_id }}</td>
+            <td>
+              {% if row.is_match %}
+                <span class="badge text-bg-success">採用</span>
+              {% else %}
+                <span class="badge text-bg-warning">{{ reason_labels.get(row.reason_code, row.reason_code) }}</span>
+              {% endif %}
+            </td>
+            <td>{{ row.worker_name or '-' }}</td>
+            <td>{{ row.reason_note or '-' }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" class="text-muted">データなし</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

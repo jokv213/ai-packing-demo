@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Simulator - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Simulator</h1>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="post" action="/simulator" class="row g-2">
+      <div class="col-md-4">
+        <label class="form-label">SKU名（任意）</label>
+        <input class="form-control" name="name" value="{{ form_data.name }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">カテゴリ</label>
+        <input class="form-control" name="category" value="{{ form_data.category }}">
+      </div>
+      <div class="col-md-2"><label class="form-label">長さ(mm)</label><input class="form-control" type="number" name="length_mm" value="{{ form_data.length_mm }}" required></div>
+      <div class="col-md-2"><label class="form-label">幅(mm)</label><input class="form-control" type="number" name="width_mm" value="{{ form_data.width_mm }}" required></div>
+      <div class="col-md-2"><label class="form-label">高さ(mm)</label><input class="form-control" type="number" name="height_mm" value="{{ form_data.height_mm }}" required></div>
+      <div class="col-md-2"><label class="form-label">重量(g)</label><input class="form-control" type="number" name="weight_g" value="{{ form_data.weight_g }}" required></div>
+      <div class="col-md-2"><label class="form-label">padding(mm)</label><input class="form-control" type="number" name="padding_mm" value="{{ form_data.padding_mm }}" required></div>
+      <div class="col-md-2">
+        <label class="form-label">carrier</label>
+        <select class="form-select" name="carrier">
+          <option value="CarrierA" {% if form_data.carrier == 'CarrierA' %}selected{% endif %}>CarrierA</option>
+          <option value="CarrierB" {% if form_data.carrier == 'CarrierB' %}selected{% endif %}>CarrierB</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <div class="form-check me-3"><input class="form-check-input" type="checkbox" name="can_rotate" {% if form_data.can_rotate %}checked{% endif %}><label class="form-check-label">回転可</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" name="fragile" {% if form_data.fragile %}checked{% endif %}><label class="form-check-label">fragile</label></div>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-primary w-100">シミュレーション実行</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if candidates %}
+  <div class="card mb-4">
+    <div class="card-header">箱候補 上位{{ candidates|length }}件</div>
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>箱</th><th>サイズ</th><th>carrier/service</th><th>送料</th><th>箱コスト</th><th>合計</th><th>充填率</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in candidates %}
+            <tr>
+              <td>{{ c.box_id }} / {{ c.box_name }}</td>
+              <td>{{ c.size_class }}</td>
+              <td>{{ c.carrier }} / {{ c.service }}</td>
+              <td>¥{{ '{:,}'.format(c.shipping_yen) }}</td>
+              <td>¥{{ '{:,}'.format(c.box_cost_yen) }}</td>
+              <td>¥{{ '{:,}'.format(c.total_cost_yen) }}</td>
+              <td>{{ safe_ratio(c.fill_ratio) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <form method="post" action="/simulator/register_sku" class="card">
+    <div class="card-body">
+      <h2 class="h6">入力値をSKUマスタへ登録</h2>
+      <div class="row g-2">
+        <input type="hidden" name="name" value="{{ form_data.name }}">
+        <input type="hidden" name="category" value="{{ form_data.category }}">
+        <input type="hidden" name="length_mm" value="{{ form_data.length_mm }}">
+        <input type="hidden" name="width_mm" value="{{ form_data.width_mm }}">
+        <input type="hidden" name="height_mm" value="{{ form_data.height_mm }}">
+        <input type="hidden" name="weight_g" value="{{ form_data.weight_g }}">
+        <input type="hidden" name="padding_mm" value="{{ form_data.padding_mm }}">
+        <input type="hidden" name="can_rotate" value="{{ 1 if form_data.can_rotate else 0 }}">
+        <input type="hidden" name="fragile" value="{{ 1 if form_data.fragile else 0 }}">
+        <div class="col-md-6">
+          <label class="form-label">SKU ID（空なら自動採番）</label>
+          <input class="form-control" name="sku_id" placeholder="SKU-NEW-0001">
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+          <button class="btn btn-success">SKUとして登録</button>
+        </div>
+      </div>
+    </div>
+  </form>
+{% endif %}
+{% endblock %}

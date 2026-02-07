@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Masters SKU - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Masters</h1>
+{% include "_masters_tabs.html" %}
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">SKU追加</div>
+      <div class="card-body">
+        <form method="post" action="/masters/skus/create" class="row g-2">
+          <div class="col-md-6"><input class="form-control" name="sku_id" placeholder="sku_id" required></div>
+          <div class="col-md-6"><input class="form-control" name="name" placeholder="name" required></div>
+          <div class="col-md-4"><input class="form-control" name="category" placeholder="category" value="other"></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="length_mm" placeholder="length_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="width_mm" placeholder="width_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="height_mm" placeholder="height_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="weight_g" placeholder="weight_g" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="padding_mm" placeholder="padding_mm" value="0"></div>
+          <div class="col-md-4"><input class="form-control" name="prohibited_group" placeholder="prohibited_group"></div>
+          <div class="col-12 d-flex gap-3">
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="can_rotate" checked>回転可</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="fragile">fragile</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="compressible">compressible</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="hazmat">hazmat</label>
+          </div>
+          <div class="col-12"><button class="btn btn-primary">追加</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card mb-3">
+      <div class="card-header">CSVインポート</div>
+      <div class="card-body">
+        <form method="post" action="/masters/skus/import" enctype="multipart/form-data" class="d-flex gap-2">
+          <input class="form-control" type="file" name="file" accept=".csv" required>
+          <button class="btn btn-outline-primary">インポート</button>
+        </form>
+      </div>
+    </div>
+    <a class="btn btn-outline-secondary" href="/masters/skus/export">CSVエクスポート</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">SKU一覧</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped mb-0">
+      <thead>
+        <tr><th>sku_id</th><th>name</th><th>category</th><th>寸法</th><th>重量</th><th>属性</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for sku in skus %}
+          <tr>
+            <td>{{ sku.sku_id }}</td>
+            <td>{{ sku.name }}</td>
+            <td>{{ sku.category }}</td>
+            <td>{{ sku.length_mm }}x{{ sku.width_mm }}x{{ sku.height_mm }}</td>
+            <td>{{ sku.weight_g }}</td>
+            <td>
+              {% if sku.fragile %}<span class="badge text-bg-warning">fragile</span>{% endif %}
+              {% if sku.hazmat %}<span class="badge text-bg-danger">hazmat</span>{% endif %}
+              {% if sku.prohibited_group %}<span class="badge text-bg-info">{{ sku.prohibited_group }}</span>{% endif %}
+            </td>
+            <td><a class="btn btn-sm btn-outline-primary" href="/masters/skus/{{ sku.sku_id }}/edit">編集</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-muted">データなし</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

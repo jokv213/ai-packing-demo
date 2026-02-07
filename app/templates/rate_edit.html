@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}運賃編集 - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">運賃編集: #{{ rate.id }}</h1>
+{% include "_masters_tabs.html" %}
+
+<form method="post" action="/masters/rates/{{ rate.id }}/edit" class="card">
+  <div class="card-body row g-2">
+    <div class="col-md-4"><label class="form-label">carrier</label><input class="form-control" name="carrier" value="{{ rate.carrier }}"></div>
+    <div class="col-md-4"><label class="form-label">service</label><input class="form-control" name="service" value="{{ rate.service }}"></div>
+    <div class="col-md-4"><label class="form-label">size_class</label><input class="form-control" name="size_class" value="{{ rate.size_class }}"></div>
+    <div class="col-md-6"><label class="form-label">max_weight_g</label><input class="form-control" type="number" name="max_weight_g" value="{{ rate.max_weight_g }}"></div>
+    <div class="col-md-6"><label class="form-label">price_yen</label><input class="form-control" type="number" name="price_yen" value="{{ rate.price_yen }}"></div>
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button class="btn btn-primary">保存</button>
+    <a class="btn btn-outline-secondary" href="/masters/rates">戻る</a>
+  </div>
+</form>
+{% endblock %}

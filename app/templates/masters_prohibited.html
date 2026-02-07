@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Masters Prohibited - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Masters</h1>
+{% include "_masters_tabs.html" %}
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">同梱禁止ルール追加</div>
+      <div class="card-body">
+        <form method="post" action="/masters/prohibited/create" class="row g-2">
+          <div class="col-md-4"><input class="form-control" name="group_a" placeholder="group_a" required></div>
+          <div class="col-md-4"><input class="form-control" name="group_b" placeholder="group_b" required></div>
+          <div class="col-md-12"><input class="form-control" name="reason" placeholder="reason" required></div>
+          <div class="col-12"><button class="btn btn-primary">追加</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">CSVインポート</div>
+      <div class="card-body">
+        <form method="post" action="/masters/prohibited/import" enctype="multipart/form-data" class="d-flex gap-2">
+          <input class="form-control" type="file" name="file" accept=".csv" required>
+          <button class="btn btn-outline-primary">インポート</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">同梱禁止一覧</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped mb-0">
+      <thead>
+        <tr><th>group_a</th><th>group_b</th><th>reason</th></tr>
+      </thead>
+      <tbody>
+        {% for rule in rules %}
+          <tr><td>{{ rule.group_a }}</td><td>{{ rule.group_b }}</td><td>{{ rule.reason }}</td></tr>
+        {% else %}
+          <tr><td colspan="3" class="text-muted">データなし</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

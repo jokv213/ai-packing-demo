@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Masters Box - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Masters</h1>
+{% include "_masters_tabs.html" %}
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">箱追加</div>
+      <div class="card-body">
+        <form method="post" action="/masters/boxes/create" class="row g-2">
+          <div class="col-md-6"><input class="form-control" name="box_id" placeholder="box_id" required></div>
+          <div class="col-md-6"><input class="form-control" name="name" placeholder="name" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="inner_length_mm" placeholder="inner_length_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="inner_width_mm" placeholder="inner_width_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="inner_height_mm" placeholder="inner_height_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="outer_length_mm" placeholder="outer_length_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="outer_width_mm" placeholder="outer_width_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="outer_height_mm" placeholder="outer_height_mm" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="max_weight_g" placeholder="max_weight_g" required></div>
+          <div class="col-md-4"><input class="form-control" type="number" name="box_cost_yen" placeholder="box_cost_yen" required></div>
+          <div class="col-md-4"><input class="form-control" name="box_type" placeholder="box_type" value="box"></div>
+          <div class="col-12"><button class="btn btn-primary">追加</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">CSVインポート</div>
+      <div class="card-body">
+        <form method="post" action="/masters/boxes/import" enctype="multipart/form-data" class="d-flex gap-2">
+          <input class="form-control" type="file" name="file" accept=".csv" required>
+          <button class="btn btn-outline-primary">インポート</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">箱一覧</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped mb-0">
+      <thead>
+        <tr><th>box_id</th><th>name</th><th>内寸(mm)</th><th>外寸(mm)</th><th>最大重量</th><th>コスト</th><th>type</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for box in boxes %}
+          <tr>
+            <td>{{ box.box_id }}</td>
+            <td>{{ box.name }}</td>
+            <td>{{ box.inner_length_mm }}x{{ box.inner_width_mm }}x{{ box.inner_height_mm }}</td>
+            <td>{{ box.outer_length_mm }}x{{ box.outer_width_mm }}x{{ box.outer_height_mm }}</td>
+            <td>{{ box.max_weight_g }}</td>
+            <td>{{ box.box_cost_yen }}</td>
+            <td>{{ box.box_type }}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="/masters/boxes/{{ box.box_id }}/edit">編集</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" class="text-muted">データなし</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

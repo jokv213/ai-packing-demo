@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Masters Rate - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Masters</h1>
+{% include "_masters_tabs.html" %}
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">運賃追加</div>
+      <div class="card-body">
+        <form method="post" action="/masters/rates/create" class="row g-2">
+          <div class="col-md-4"><input class="form-control" name="carrier" placeholder="carrier" required></div>
+          <div class="col-md-4"><input class="form-control" name="service" placeholder="service" required></div>
+          <div class="col-md-4"><input class="form-control" name="size_class" placeholder="size_class" required></div>
+          <div class="col-md-6"><input class="form-control" type="number" name="max_weight_g" placeholder="max_weight_g" required></div>
+          <div class="col-md-6"><input class="form-control" type="number" name="price_yen" placeholder="price_yen" required></div>
+          <div class="col-12"><button class="btn btn-primary">追加</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">CSVインポート</div>
+      <div class="card-body">
+        <form method="post" action="/masters/rates/import" enctype="multipart/form-data" class="d-flex gap-2">
+          <input class="form-control" type="file" name="file" accept=".csv" required>
+          <button class="btn btn-outline-primary">インポート</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">運賃一覧</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped mb-0">
+      <thead>
+        <tr><th>ID</th><th>carrier</th><th>service</th><th>size_class</th><th>max_weight_g</th><th>price_yen</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for rate in rates %}
+          <tr>
+            <td>{{ rate.id }}</td>
+            <td>{{ rate.carrier }}</td>
+            <td>{{ rate.service }}</td>
+            <td>{{ rate.size_class }}</td>
+            <td>{{ rate.max_weight_g }}</td>
+            <td>{{ rate.price_yen }}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="/masters/rates/{{ rate.id }}/edit">編集</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-muted">データなし</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

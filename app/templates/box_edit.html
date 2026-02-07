@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}箱編集 - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">箱編集: {{ box.box_id }}</h1>
+{% include "_masters_tabs.html" %}
+
+<form method="post" action="/masters/boxes/{{ box.box_id }}/edit" class="card">
+  <div class="card-body row g-2">
+    <div class="col-md-6"><label class="form-label">name</label><input class="form-control" name="name" value="{{ box.name }}"></div>
+    <div class="col-md-3"><label class="form-label">box_type</label><input class="form-control" name="box_type" value="{{ box.box_type }}"></div>
+    <div class="col-md-3"><label class="form-label">box_cost_yen</label><input class="form-control" type="number" name="box_cost_yen" value="{{ box.box_cost_yen }}"></div>
+    <div class="col-md-3"><label class="form-label">inner_length_mm</label><input class="form-control" type="number" name="inner_length_mm" value="{{ box.inner_length_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">inner_width_mm</label><input class="form-control" type="number" name="inner_width_mm" value="{{ box.inner_width_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">inner_height_mm</label><input class="form-control" type="number" name="inner_height_mm" value="{{ box.inner_height_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">max_weight_g</label><input class="form-control" type="number" name="max_weight_g" value="{{ box.max_weight_g }}"></div>
+    <div class="col-md-3"><label class="form-label">outer_length_mm</label><input class="form-control" type="number" name="outer_length_mm" value="{{ box.outer_length_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">outer_width_mm</label><input class="form-control" type="number" name="outer_width_mm" value="{{ box.outer_width_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">outer_height_mm</label><input class="form-control" type="number" name="outer_height_mm" value="{{ box.outer_height_mm }}"></div>
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button class="btn btn-primary">保存</button>
+    <a class="btn btn-outline-secondary" href="/masters/boxes">戻る</a>
+  </div>
+</form>
+{% endblock %}

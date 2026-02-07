@@ -1,0 +1,15 @@
+﻿carrier,service,size_class,max_weight_g,price_yen
+CarrierA,Standard,60,25000,700
+CarrierB,Economy,60,20000,650
+CarrierA,Standard,80,25000,850
+CarrierB,Economy,80,20000,790
+CarrierA,Standard,100,25000,1000
+CarrierB,Economy,100,20000,930
+CarrierA,Standard,120,25000,1150
+CarrierB,Economy,120,20000,1070
+CarrierA,Standard,140,25000,1300
+CarrierB,Economy,140,20000,1210
+CarrierA,Standard,160,25000,1450
+CarrierB,Economy,160,20000,1350
+CarrierA,Mail,MAIL,1000,250
+CarrierB,Mail,MAIL,1000,230

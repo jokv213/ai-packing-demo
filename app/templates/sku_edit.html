@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}SKU編集 - AI梱包提案デモ{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">SKU編集: {{ sku.sku_id }}</h1>
+{% include "_masters_tabs.html" %}
+
+<form method="post" action="/masters/skus/{{ sku.sku_id }}/edit" class="card">
+  <div class="card-body row g-2">
+    <div class="col-md-4"><label class="form-label">name</label><input class="form-control" name="name" value="{{ sku.name }}"></div>
+    <div class="col-md-4"><label class="form-label">category</label><input class="form-control" name="category" value="{{ sku.category }}"></div>
+    <div class="col-md-4"><label class="form-label">prohibited_group</label><input class="form-control" name="prohibited_group" value="{{ sku.prohibited_group or '' }}"></div>
+    <div class="col-md-3"><label class="form-label">length_mm</label><input class="form-control" type="number" name="length_mm" value="{{ sku.length_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">width_mm</label><input class="form-control" type="number" name="width_mm" value="{{ sku.width_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">height_mm</label><input class="form-control" type="number" name="height_mm" value="{{ sku.height_mm }}"></div>
+    <div class="col-md-3"><label class="form-label">weight_g</label><input class="form-control" type="number" name="weight_g" value="{{ sku.weight_g }}"></div>
+    <div class="col-md-3"><label class="form-label">padding_mm</label><input class="form-control" type="number" name="padding_mm" value="{{ sku.padding_mm }}"></div>
+    <div class="col-12 d-flex gap-3">
+      <label class="form-check"><input class="form-check-input" type="checkbox" name="can_rotate" {% if sku.can_rotate %}checked{% endif %}>回転可</label>
+      <label class="form-check"><input class="form-check-input" type="checkbox" name="fragile" {% if sku.fragile %}checked{% endif %}>fragile</label>
+      <label class="form-check"><input class="form-check-input" type="checkbox" name="compressible" {% if sku.compressible %}checked{% endif %}>compressible</label>
+      <label class="form-check"><input class="form-check-input" type="checkbox" name="hazmat" {% if sku.hazmat %}checked{% endif %}>hazmat</label>
+    </div>
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button class="btn btn-primary">保存</button>
+    <a class="btn btn-outline-secondary" href="/masters/skus">戻る</a>
+  </div>
+</form>
+{% endblock %}

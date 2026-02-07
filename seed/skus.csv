@@ -1,0 +1,50 @@
+﻿sku_id,name,category,length_mm,width_mm,height_mm,weight_g,can_rotate,fragile,compressible,hazmat,padding_mm,prohibited_group
+SKU-TSHIRT-BLK-M,Tシャツ ブラック M,apparel,260,210,25,220,1,0,1,0,5,
+SKU-TSHIRT-WHT-L,Tシャツ ホワイト L,apparel,270,220,28,240,1,0,1,0,5,
+SKU-HOODIE-GRY-M,パーカー グレー M,apparel,340,280,60,650,1,0,1,0,10,
+SKU-SOCKS-3P,ソックス 3足セット,apparel,180,140,40,180,1,0,1,0,5,
+SKU-BOOK-A5-200P,書籍 A5 200ページ,book,215,155,18,320,1,0,0,0,3,
+SKU-BOOK-B6-350P,書籍 B6 350ページ,book,182,128,30,420,1,0,0,0,3,
+SKU-MANGA-SET-5,マンガ 5冊セット,book,190,130,90,1100,1,0,0,0,5,
+SKU-COSM-LOTION-200,化粧水 200ml,cosmetics,60,60,165,250,0,1,0,0,8,liquid
+SKU-COSM-SERUM-30,美容液 30ml（ガラス瓶）,cosmetics,45,45,110,120,0,1,0,0,10,liquid
+SKU-COSM-CREAM-50,クリーム 50g,cosmetics,70,70,55,140,1,0,0,0,6,
+SKU-USB-CABLE-1M,USB-C ケーブル 1m,electronics,120,90,25,90,1,0,0,0,2,
+SKU-CHARGER-20W,USB充電器 20W,electronics,80,55,40,110,1,0,0,0,4,
+SKU-EARBUDS,ワイヤレスイヤホン,electronics,110,100,60,180,1,1,0,0,6,battery
+SKU-MOBILE-BATT-10000,モバイルバッテリー 10000mAh,electronics,140,70,18,220,1,0,0,0,5,battery
+SKU-MUG-350,マグカップ 350ml（陶器）,home,120,90,105,380,0,1,0,0,12,fragile
+SKU-GLASS-2P,グラス 2個セット（ガラス）,home,160,80,170,620,0,1,0,0,15,fragile
+SKU-TOWEL-L,バスタオル,home,320,250,55,420,1,0,1,0,8,
+SKU-SNACK-BOX,お菓子詰め合わせ,food,240,180,60,800,1,0,0,0,6,food
+SKU-COFFEE-BEANS-500,コーヒー豆 500g,food,180,110,70,520,1,0,1,0,4,food
+SKU-DETERGENT-1L,洗剤 1L,household,95,75,245,1150,0,0,0,0,8,chemical
+SKU-SOFTENER-1L,柔軟剤 1L,household,95,75,245,1150,0,0,0,0,8,chemical
+SKU-NOTE-A4,ノート A4,stationery,305,225,12,260,1,0,0,0,3,
+SKU-PEN-SET,ペン 10本セット,stationery,200,90,35,180,1,0,0,0,2,
+SKU-KEYCHAIN,キーホルダー,accessory,70,45,20,40,1,0,0,0,2,
+SKU-CAP,キャップ,apparel,260,220,140,210,0,0,0,0,8,
+SKU-POSTER-A1,ポスター A1（筒）,home,630,90,90,450,0,0,0,0,5,long
+SKU-PHONE-CASE,スマホケース,electronics,180,110,25,90,1,0,0,0,3,
+SKU-BLUETOOTH-SPK,Bluetoothスピーカー,electronics,210,75,75,520,1,0,0,0,6,battery
+SKU-TOY-BLOCKS,ブロック玩具（小箱）,toy,180,140,65,480,1,0,0,0,5,
+SKU-PLUSH-S,ぬいぐるみ S,toy,240,170,120,260,1,0,1,0,8,
+SKU-SHOES-26,スニーカー 26cm（箱入り）,apparel,330,220,120,980,0,0,0,0,10,
+SKU-SKINCARE-SET,スキンケア 3点セット,cosmetics,220,160,70,650,1,1,0,0,12,liquid
+SKU-CANDLE,アロマキャンドル（ガラス）,home,95,95,105,420,1,1,0,0,12,fragile
+SKU-TEA-SET,紅茶ギフトセット,food,260,190,85,900,1,0,0,0,6,food
+SKU-WET-WIPES,ウェットティッシュ,household,200,120,70,520,1,0,1,0,4,chemical
+SKU-LAPTOP-STAND,ノートPCスタンド,electronics,260,230,45,750,1,0,0,0,6,
+SKU-KEYBOARD,キーボード,electronics,460,160,50,780,1,0,0,0,8,
+SKU-MOUSE,マウス,electronics,120,80,45,120,1,0,0,0,4,
+SKU-BOOK-A4-100P,書籍 A4 100ページ,book,297,210,10,300,1,0,0,0,3,
+SKU-COSM-PERFUME,香水 50ml（ガラス瓶）,cosmetics,55,40,120,160,0,1,0,0,10,liquid
+SKU-CHOCOLATE-BOX,チョコレートギフト,food,210,150,45,450,1,0,0,0,5,food
+SKU-UMBRELLA,折りたたみ傘,home,300,70,70,320,1,0,0,0,5,long
+SKU-BOTTLE-500,ステンレスボトル 500ml,home,75,75,235,320,0,0,0,0,8,
+SKU-HEADPHONES,ヘッドホン,electronics,220,190,95,420,0,1,0,0,10,battery
+SKU-DRIPPER,コーヒードリッパー（陶器）,home,140,140,110,350,0,1,0,0,12,fragile
+SKU-PLATES-2P,プレート 2枚セット（陶器）,home,240,240,70,950,0,1,0,0,15,fragile
+SKU-BOARDGAME,ボードゲーム,toy,300,300,70,1200,0,0,0,0,6,
+SKU-TSHIRT-RED-S,Tシャツ レッド S,apparel,250,200,25,210,1,0,1,0,5,
+SKU-BELT,ベルト,apparel,260,180,55,260,1,0,0,0,5,

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.order_id }} - AI梱包提案デモ{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Order Detail: {{ order.order_id }}</h1>
+  <div class="d-flex gap-2">
+    <form method="post" action="/orders/{{ order.order_id }}/recalculate">
+      <button class="btn btn-outline-primary">提案を再計算</button>
+    </form>
+    <a class="btn btn-primary" href="/packing/{{ order.order_id }}">この提案で梱包開始</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">受注日</div><div>{{ order.order_date }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">チャネル</div><div>{{ order.channel }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">配送先</div><div>{{ order.destination_prefecture }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="text-muted small">ステータス</div><div>{{ order.status }}</div></div></div></div>
+</div>
+
+{% if order.customer_note %}
+  <div class="alert alert-warning">備考: {{ order.customer_note }}</div>
+{% endif %}
+
+<div class="card mb-4">
+  <div class="card-header">受注明細</div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped mb-0">
+        <thead>
+          <tr>
+            <th>SKU</th><th>商品名</th><th>数量</th><th>寸法(mm)</th><th>重量(g)</th><th>属性</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>{{ item.sku_id }}</td>
+              <td>{{ item.sku.name if item.sku else '-' }}</td>
+              <td>{{ item.qty }}</td>
+              <td>{% if item.sku %}{{ item.sku.length_mm }} x {{ item.sku.width_mm }} x {{ item.sku.height_mm }}{% else %}-{% endif %}</td>
+              <td>{{ item.sku.weight_g if item.sku else '-' }}</td>
+              <td>
+                {% if item.sku and item.sku.fragile %}<span class="badge text-bg-warning">fragile</span>{% endif %}
+                {% if item.sku and item.sku.hazmat %}<span class="badge text-bg-danger">hazmat</span>{% endif %}
+                {% if item.sku and item.sku.prohibited_group %}<span class="badge text-bg-info">{{ item.sku.prohibited_group }}</span>{% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" class="text-muted">明細がありません</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<h2 class="h4 mb-3">梱包提案</h2>
+<div class="row g-3">
+  {% for shipment in shipments %}
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between">
+          <span>Shipment #{{ shipment.shipment_no }}</span>
+          <span class="small text-muted">充填率 {{ safe_ratio(shipment.fill_ratio) }}</span>
+        </div>
+        <div class="card-body">
+          {% if shipment.split_reason %}
+            <div class="alert alert-warning py-2">分割理由: {{ shipment.split_reason }}</div>
+          {% endif %}
+
+          <p class="mb-1"><strong>推奨箱:</strong> {{ shipment.recommended_box_id or '未提案' }} {{ shipment.recommended_box_name or '' }}</p>
+          <p class="mb-1"><strong>送料:</strong> {{ shipment.carrier or '-' }} / {{ shipment.service or '-' }} / {{ shipment.size_class or '-' }} / ¥{{ '{:,}'.format(shipment.shipping_yen or 0) }}</p>
+          <p class="mb-1"><strong>箱コスト:</strong> ¥{{ '{:,}'.format(shipment.box_cost_yen or 0) }}</p>
+          <p class="mb-2"><strong>合計:</strong> ¥{{ '{:,}'.format(shipment.total_cost_yen or 0) }}</p>
+          {% if shipment.warning_message %}
+            <div class="alert alert-danger py-2">{{ shipment.warning_message }}</div>
+          {% endif %}
+
+          <ul class="mb-0">
+            {% for s_item in shipment.items %}
+              <li>{{ s_item.sku_id }} x {{ s_item.qty }} {% if s_item.sku %}({{ s_item.sku.name }}){% endif %}</li>
+            {% endfor %}
+          </ul>
+
+          <div class="mt-2">
+            {% for tag in shipment_tags(shipment) %}
+              <span class="badge text-bg-secondary">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-muted">提案がありません</p>
+  {% endfor %}
+</div>
+{% endblock %}
