@@ -1,0 +1,4 @@
+order_id,order_date,channel,destination_prefecture,status,customer_note
+TEST-IMPORT-001,2026-02-08,自社EC,東京都,created,【テスト1】Tシャツ+キーホルダー（通常同梱）
+TEST-IMPORT-002,2026-02-08,ECモールA,大阪府,created,【テスト2】食品+洗剤（同梱禁止分割を確認）
+TEST-IMPORT-003,2026-02-08,ECモールB,北海道,created,【テスト3】ポスター（長尺箱を確認）

@@ -4,7 +4,7 @@ import csv
 import io
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Sequence
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -29,6 +29,41 @@ SEED_FILE_NAMES = {
     "orders": "orders.csv",
     "order_items": "order_items.csv",
     "prohibited": "prohibited_group_pairs.csv",
+}
+
+REQUIRED_COLUMNS = {
+    "skus.csv": [
+        "sku_id",
+        "name",
+        "category",
+        "length_mm",
+        "width_mm",
+        "height_mm",
+        "weight_g",
+        "can_rotate",
+        "fragile",
+        "compressible",
+        "hazmat",
+        "padding_mm",
+        "prohibited_group",
+    ],
+    "boxes.csv": [
+        "box_id",
+        "name",
+        "inner_length_mm",
+        "inner_width_mm",
+        "inner_height_mm",
+        "max_weight_g",
+        "box_cost_yen",
+        "box_type",
+        "outer_length_mm",
+        "outer_width_mm",
+        "outer_height_mm",
+    ],
+    "shipping_rates.csv": ["carrier", "service", "size_class", "max_weight_g", "price_yen"],
+    "prohibited_group_pairs.csv": ["group_a", "group_b", "reason"],
+    "orders.csv": ["order_id", "order_date", "channel", "destination_prefecture", "status", "customer_note"],
+    "order_items.csv": ["order_id", "sku_id", "qty"],
 }
 
 
@@ -64,6 +99,20 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
 def read_csv_rows_from_bytes(data: bytes) -> list[dict[str, str]]:
     text = data.decode("utf-8-sig")
     return list(csv.DictReader(io.StringIO(text)))
+
+
+def ensure_required_columns(rows: list[dict[str, str]], csv_name: str) -> None:
+    required = REQUIRED_COLUMNS.get(csv_name)
+    if not required:
+        return
+    if not rows:
+        raise ValueError(f"{csv_name} が空です")
+
+    available = set((rows[0] or {}).keys())
+    missing = [column for column in required if column not in available]
+    if missing:
+        missing_label = ", ".join(missing)
+        raise ValueError(f"{csv_name} のヘッダーが不正です。必要列: {missing_label}")
 
 
 def upsert_skus(db: Session, rows: Iterable[dict[str, str]]) -> int:
@@ -154,8 +203,7 @@ def replace_prohibited_pairs(db: Session, rows: Iterable[dict[str, str]]) -> int
     return count
 
 
-def replace_orders(db: Session, rows: Iterable[dict[str, str]]) -> int:
-    db.query(Order).delete()
+def upsert_orders(db: Session, rows: Iterable[dict[str, str]]) -> int:
     count = 0
     for row in rows:
         order_id = _norm(row.get("order_id"))
@@ -177,8 +225,12 @@ def replace_orders(db: Session, rows: Iterable[dict[str, str]]) -> int:
     return count
 
 
-def replace_order_items(db: Session, rows: Iterable[dict[str, str]]) -> int:
-    db.query(OrderItem).delete()
+def replace_orders(db: Session, rows: Iterable[dict[str, str]]) -> int:
+    db.query(Order).delete()
+    return upsert_orders(db, rows)
+
+
+def upsert_order_items(db: Session, rows: Iterable[dict[str, str]]) -> int:
     count = 0
     for row in rows:
         order_id = _norm(row.get("order_id"))
@@ -189,6 +241,11 @@ def replace_order_items(db: Session, rows: Iterable[dict[str, str]]) -> int:
         db.add(OrderItem(order_id=order_id, sku_id=sku_id, qty=qty))
         count += 1
     return count
+
+
+def replace_order_items(db: Session, rows: Iterable[dict[str, str]]) -> int:
+    db.query(OrderItem).delete()
+    return upsert_order_items(db, rows)
 
 
 def clear_all_data(db: Session) -> None:
@@ -202,6 +259,31 @@ def clear_all_data(db: Session) -> None:
     db.query(ShippingRate).delete()
     db.query(Box).delete()
     db.query(SKU).delete()
+
+
+def clear_order_data(db: Session) -> None:
+    db.query(PackingExecutionLog).delete()
+    db.query(PackingShipmentItem).delete()
+    db.query(PackingShipment).delete()
+    db.query(PackingPlan).delete()
+    db.query(OrderItem).delete()
+    db.query(Order).delete()
+
+
+def clear_order_data_for_orders(db: Session, order_ids: Sequence[str]) -> None:
+    targets = sorted({order_id for order_id in order_ids if order_id})
+    if not targets:
+        return
+
+    plan_ids = select(PackingPlan.id).where(PackingPlan.order_id.in_(targets))
+    shipment_ids = select(PackingShipment.id).where(PackingShipment.plan_id.in_(plan_ids))
+
+    db.query(PackingExecutionLog).filter(PackingExecutionLog.order_id.in_(targets)).delete(synchronize_session=False)
+    db.query(PackingShipmentItem).filter(PackingShipmentItem.shipment_id.in_(shipment_ids)).delete(synchronize_session=False)
+    db.query(PackingShipment).filter(PackingShipment.plan_id.in_(plan_ids)).delete(synchronize_session=False)
+    db.query(PackingPlan).filter(PackingPlan.order_id.in_(targets)).delete(synchronize_session=False)
+    db.query(OrderItem).filter(OrderItem.order_id.in_(targets)).delete(synchronize_session=False)
+    db.query(Order).filter(Order.order_id.in_(targets)).delete(synchronize_session=False)
 
 
 def seed_if_empty(db: Session, seed_dir: Path | None = None, force: bool = False) -> bool:

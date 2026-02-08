@@ -15,7 +15,41 @@ pip install -r requirements.txt
 ./scripts/dev.sh
 ```
 
-起動後にログに表示されたURL（例: `http://127.0.0.1:8000`）を開いてください。
+起動後にログに表示されたURLを開いてください。  
+例: `http://127.0.0.1:8000` または `http://127.0.0.1:8001`
+
+重要:
+- `8000` が他プロセス（Dockerなど）で使用中の場合、`./scripts/dev.sh` は自動で `8001-8005` に切り替えます。
+- ブラウザで `http://127.0.0.1:8000` を固定で開かず、**起動ログに表示されたURL** を必ず使ってください。
+
+事前診断（推奨）:
+```bash
+./scripts/doctor.sh
+```
+
+起動後の状態確認:
+```bash
+./scripts/status.sh
+```
+
+停止:
+```bash
+./scripts/stop.sh
+```
+
+## 常駐起動（推奨）
+ブラウザでの `ERR_CONNECTION_REFUSED` を避けるため、macOSの `launchd` 管理で常駐起動できます。
+
+```bash
+./scripts/service.sh start
+./scripts/service.sh status
+./scripts/service.sh logs
+./scripts/service.sh stop
+```
+
+- デフォルトは `http://127.0.0.1:8000`
+- `start` は `.venv` と依存を自動確認し、不足時はインストールします
+- `status` は `orders` 画面のCSVインポートUIまで確認します
 
 `./scripts/dev.sh` はデフォルトで `reload=off` で起動します（安定優先）。
 ホットリロードが必要な場合は:
@@ -43,6 +77,9 @@ uvicorn app.main:app --reload
 - Logs: `/logs`
 
 ## CSVインポート
+- 受注（Orders画面）: `orders.csv` と `order_items.csv` を同時アップロード
+  - デフォルト: 同じ `order_id` のみ置換（既存の他注文は保持）
+  - 「既存受注をすべて置き換える」にチェック時のみ全置換
 - SKU: `POST /masters/skus/import`
 - 箱: `POST /masters/boxes/import`
 - 運賃: `POST /masters/rates/import`
@@ -85,6 +122,10 @@ docker run --rm -p 8000:8000 ai-packing-demo
 - `address already in use` の場合:
   - `./scripts/dev.sh` は `PORT` 未指定時、`8000` が使用中なら `8001-8005` の空きポートへ自動で切り替えます。
   - 固定ポートで起動したい場合は `PORT=8001 ./scripts/dev.sh` を使ってください。
+- `127.0.0.1:8000` で別アプリが表示される場合:
+  - Dockerのコンテナが `8000` を掴んでいる可能性があります。
+  - `docker ps` で `0.0.0.0:8000->8000/tcp` を確認し、不要なら `docker stop <CONTAINER_ID>` で停止してください。
+  - もしくは `./scripts/dev.sh` が提示した `8001` 以降のURLを使ってください。
 - `uvicorn --reload` でファイル監視系の Permission エラーが出る場合:
   - `RELOAD=1` 利用時に起きることがあります。まず `./scripts/dev.sh`（reload=off）で起動確認してください。
   - reloadを使う場合は `WATCHFILES_FORCE_POLLING=1 RELOAD=1 ./scripts/dev.sh` を使ってください。

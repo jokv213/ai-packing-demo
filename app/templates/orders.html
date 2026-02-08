@@ -3,6 +3,38 @@
 {% block content %}
 <h1 class="h3 mb-3">Orders</h1>
 
+<div class="card mb-3">
+  <div class="card-header">CSVインポート（受注）</div>
+  <div class="card-body">
+    <form class="row g-2" method="post" action="/orders/import" enctype="multipart/form-data">
+      <div class="col-md-4">
+        <label class="form-label">orders.csv</label>
+        <input class="form-control" type="file" name="orders_file" accept=".csv,text/csv" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">order_items.csv</label>
+        <input class="form-control" type="file" name="order_items_file" accept=".csv,text/csv" required>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary w-100">受注CSVをインポート</button>
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="replace_all" id="replace-all">
+          <label class="form-check-label" for="replace-all">
+            既存受注をすべて置き換える（チェックなし: 同じorder_idのみ置換）
+          </label>
+        </div>
+      </div>
+      <div class="col-12">
+        <small class="text-muted">
+          通常は同じorder_idのみ更新されます。チェック時のみ受注・梱包提案・梱包実績ログを全置換します。
+        </small>
+      </div>
+    </form>
+  </div>
+</div>
+
 <form class="row g-2 mb-3" method="get" action="/orders">
   <div class="col-md-2">
     <select class="form-select" name="status">

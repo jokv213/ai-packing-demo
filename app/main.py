@@ -7,7 +7,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta
 from urllib.parse import urlencode
 
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -36,7 +36,14 @@ from app.services.packing import (
     simulate_top_candidates,
 )
 from app.services.seed import (
+    clear_order_data,
+    clear_order_data_for_orders,
+    ensure_required_columns,
     read_csv_rows_from_bytes,
+    upsert_order_items,
+    upsert_orders,
+    replace_order_items,
+    replace_orders,
     replace_prohibited_pairs,
     replace_shipping_rates,
     seed_if_empty,
@@ -297,6 +304,72 @@ def recalculate_order(order_id: str, request: Request, db: Session = Depends(get
     except Exception as exc:
         db.rollback()
         return _redirect(path, error=f"再計算に失敗しました: {exc}")
+
+
+@app.post("/orders/import")
+async def import_orders(
+    orders_file: UploadFile = File(...),
+    order_items_file: UploadFile = File(...),
+    replace_all: bool = Form(False),
+    db: Session = Depends(get_db),
+):
+    try:
+        orders_rows = read_csv_rows_from_bytes(await orders_file.read())
+        order_items_rows = read_csv_rows_from_bytes(await order_items_file.read())
+        ensure_required_columns(orders_rows, "orders.csv")
+        ensure_required_columns(order_items_rows, "order_items.csv")
+
+        import_order_ids = sorted({str(row.get("order_id", "")).strip() for row in orders_rows if str(row.get("order_id", "")).strip()})
+        if not import_order_ids:
+            raise ValueError("orders.csv に有効な order_id がありません")
+
+        item_order_ids = sorted(
+            {
+                str(row.get("order_id", "")).strip()
+                for row in order_items_rows
+                if str(row.get("order_id", "")).strip()
+            }
+        )
+        unknown_item_order_ids = [order_id for order_id in item_order_ids if order_id not in set(import_order_ids)]
+        if unknown_item_order_ids:
+            raise ValueError(
+                "order_items.csv に orders.csv に存在しない order_id があります: "
+                + ", ".join(unknown_item_order_ids[:5])
+            )
+
+        if replace_all:
+            clear_order_data(db)
+            order_count = replace_orders(db, orders_rows)
+            item_count = replace_order_items(db, order_items_rows)
+        else:
+            clear_order_data_for_orders(db, import_order_ids)
+            order_count = upsert_orders(db, orders_rows)
+            item_count = upsert_order_items(db, order_items_rows)
+
+        db.commit()
+
+        failed_recalc: list[str] = []
+        for order_id in import_order_ids:
+            try:
+                recalculate_order_plan(db, order_id)
+            except Exception:
+                db.rollback()
+                failed_recalc.append(order_id)
+
+        if failed_recalc:
+            return _redirect(
+                "/orders",
+                error=(
+                    f"受注を{order_count}件、明細を{item_count}件インポートしましたが、"
+                    f"一部の提案再計算に失敗しました: {', '.join(failed_recalc[:5])}"
+                ),
+            )
+
+        mode_label = "全置換" if replace_all else "同一order_idのみ置換"
+        return _redirect("/orders", message=f"受注を{order_count}件、明細を{item_count}件インポートしました（{mode_label}）")
+    except Exception as exc:
+        db.rollback()
+        return _redirect("/orders", error=f"受注インポートに失敗しました: {exc}")
 
 
 @app.get("/orders/{order_id}")
@@ -644,6 +717,7 @@ async def edit_sku(sku_id: str, request: Request, db: Session = Depends(get_db))
 async def import_skus(file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
         rows = read_csv_rows_from_bytes(await file.read())
+        ensure_required_columns(rows, "skus.csv")
         count = upsert_skus(db, rows)
         db.commit()
         recalculate_all_orders(db)
@@ -784,6 +858,7 @@ async def edit_box(box_id: str, request: Request, db: Session = Depends(get_db))
 async def import_boxes(file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
         rows = read_csv_rows_from_bytes(await file.read())
+        ensure_required_columns(rows, "boxes.csv")
         count = upsert_boxes(db, rows)
         db.commit()
         recalculate_all_orders(db)
@@ -859,6 +934,7 @@ async def edit_rate(rate_id: int, request: Request, db: Session = Depends(get_db
 async def import_rates(file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
         rows = read_csv_rows_from_bytes(await file.read())
+        ensure_required_columns(rows, "shipping_rates.csv")
         count = replace_shipping_rates(db, rows)
         db.commit()
         recalculate_all_orders(db)
@@ -899,6 +975,7 @@ async def create_prohibited(request: Request, db: Session = Depends(get_db)):
 async def import_prohibited(file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
         rows = read_csv_rows_from_bytes(await file.read())
+        ensure_required_columns(rows, "prohibited_group_pairs.csv")
         count = replace_prohibited_pairs(db, rows)
         db.commit()
         recalculate_all_orders(db)

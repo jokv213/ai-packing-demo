@@ -50,8 +50,15 @@ fi
 PORT="${PORT:-8000}"
 HOST="${HOST:-127.0.0.1}"
 RELOAD="${RELOAD:-0}"
+RUN_DIR="${ROOT_DIR}/.run"
+mkdir -p "$RUN_DIR"
 
 if command -v lsof >/dev/null 2>&1 && lsof -tiTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "[WARN] Port ${PORT} is in use by:"
+  lsof -nP -iTCP:"$PORT" -sTCP:LISTEN || true
+  if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | grep -q "com.docke"; then
+    echo "[WARN] Docker may be occupying port ${PORT}."
+  fi
   if [ "${PORT:-}" = "8000" ]; then
     for candidate in 8001 8002 8003 8004 8005; do
       if ! lsof -tiTCP:"$candidate" -sTCP:LISTEN >/dev/null 2>&1; then
@@ -71,12 +78,17 @@ if command -v lsof >/dev/null 2>&1 && lsof -tiTCP:"$PORT" -sTCP:LISTEN >/dev/nul
   fi
 fi
 
+echo "http://${HOST}:${PORT}" > "${RUN_DIR}/last_url"
+echo "${PORT}" > "${RUN_DIR}/last_port"
+
 if [ "$RELOAD" = "1" ]; then
   # Polling mode avoids file-watch permission issues in some environments.
   export WATCHFILES_FORCE_POLLING="${WATCHFILES_FORCE_POLLING:-1}"
   echo "[INFO] Starting app at http://${HOST}:${PORT} (reload=on)"
+  echo "[INFO] Open: http://${HOST}:${PORT}"
   exec uvicorn app.main:app --reload --host "$HOST" --port "$PORT"
 fi
 
 echo "[INFO] Starting app at http://${HOST}:${PORT} (reload=off)"
+echo "[INFO] Open: http://${HOST}:${PORT}"
 exec uvicorn app.main:app --host "$HOST" --port "$PORT"
